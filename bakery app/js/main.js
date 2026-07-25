@@ -35,6 +35,7 @@ const resultsCount = document.getElementById("resultsCount");
 
 const cartTotalQty = document.getElementById("cartTotalQty");
 const cartTotalPrice = document.getElementById("cartTotalPrice");
+const cartItemsList = document.getElementById("cartItemsList");
 const clearCartBtn = document.getElementById("clearCartBtn");
 
 const openAddProductBtn = document.getElementById("openAddProduct");
@@ -53,6 +54,7 @@ const productQuantityInput = document.getElementById("productQuantity");
 const productCategoryInput = document.getElementById("productCategory");
 const productFormError = document.getElementById("productFormError");
 const deleteProductBtn = document.getElementById("deleteProductBtn");
+const saveProductBtn = document.getElementById("saveProductBtn");
 
 const toast = document.getElementById("toast");
 
@@ -371,6 +373,28 @@ function refreshCartUI() {
   const { totalQty, totalPrice } = cart.getTotals(productsById);
   cartTotalQty.textContent = String(totalQty);
   cartTotalPrice.textContent = money(totalPrice);
+
+  cartItemsList.innerHTML = "";
+  cart.getEntries()
+    .sort((a, b) => {
+      const nameA = productsById.get(a[0])?.name || "";
+      const nameB = productsById.get(b[0])?.name || "";
+      return nameA.localeCompare(nameB);
+    })
+    .forEach(([productId, qty]) => {
+      const product = productsById.get(productId);
+      if (!product) return;
+      const li = document.createElement("li");
+      li.className = "cart-ticket__item";
+      const name = document.createElement("span");
+      name.className = "cart-ticket__item-name";
+      name.textContent = product.name;
+      const qtyEl = document.createElement("span");
+      qtyEl.className = "cart-ticket__item-qty";
+      qtyEl.textContent = `x${qty}`;
+      li.append(name, qtyEl);
+      cartItemsList.appendChild(li);
+    });
 }
 
 clearCartBtn.addEventListener("click", () => {
@@ -511,10 +535,16 @@ async function uploadImageIfNeeded(existingUrl) {
 
 productForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (saveProductBtn.disabled) return; // ya se está guardando, ignora clics repetidos
   productFormError.hidden = true;
 
   const id = productIdInput.value || null;
   const existing = id ? productsById.get(id) : null;
+
+  saveProductBtn.disabled = true;
+  deleteProductBtn.disabled = true;
+  const originalLabel = saveProductBtn.textContent;
+  saveProductBtn.textContent = "Guardando…";
 
   try {
     const image_url = await uploadImageIfNeeded(existing ? existing.image_url : null);
@@ -543,6 +573,10 @@ productForm.addEventListener("submit", async (e) => {
   } catch (err) {
     productFormError.textContent = err.message || "No se pudo guardar el producto";
     productFormError.hidden = false;
+  } finally {
+    saveProductBtn.disabled = false;
+    deleteProductBtn.disabled = false;
+    saveProductBtn.textContent = originalLabel;
   }
 });
 
