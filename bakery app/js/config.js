@@ -8,7 +8,7 @@
 // que ya vienen configuradas en supabase/schema.sql
 // ============================================================
 
-export const SUPABASE_URL = "https://vrkzpmvkbvatimviotqf.supabase.co/rest/v1/";
+export const SUPABASE_URL = "https://vrkzpmvkbvatimviotqf.supabase.co/rest/v1";
 export const SUPABASE_ANON_KEY = "sb_publishable_DlBge_Vkk_KmTxlUShjebg_J7Nrgna3";
 
 // Nombre del bucket de Storage donde se guardan las fotos
