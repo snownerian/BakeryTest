@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="./style.css" />
+<link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
@@ -86,6 +86,10 @@
       <span class="cart-ticket__value cart-ticket__value--price" id="cartTotalPrice">S/ 0.00</span>
     </div>
     <ul id="cartItemsList" class="cart-ticket__list"></ul>
+    <div class="cart-ticket__actions">
+      <button id="exportImageBtn" class="btn btn--ghost btn--small" type="button">🖼️ Imagen</button>
+      <button id="exportPdfBtn" class="btn btn--ghost btn--small" type="button">🧾 PDF</button>
+    </div>
     <button id="clearCartBtn" class="link-btn link-btn--small">Vaciar selección</button>
   </aside>
 
@@ -168,6 +172,29 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
+<!-- ============ RECIBO PARA EXPORTAR (imagen / PDF) ============ -->
+<div id="receiptArea" class="receipt">
+  <div class="receipt__header">
+    <div class="receipt__stamp">🥐</div>
+    <h2 class="receipt__brand">Dulce Registro</h2>
+    <p class="receipt__subtitle">Lista de pedido</p>
+    <p class="receipt__date" id="receiptDate"></p>
+  </div>
+  <ul class="receipt__list" id="receiptList"></ul>
+  <div class="receipt__totals">
+    <div class="receipt__row">
+      <span>Unidades</span>
+      <span id="receiptTotalQty">0</span>
+    </div>
+    <div class="receipt__row receipt__row--total">
+      <span>Total</span>
+      <span id="receiptTotalPrice">S/ 0.00</span>
+    </div>
+  </div>
+  <p class="receipt__footer">¡Gracias por tu pedido! 🍰</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>
