@@ -472,3 +472,11 @@ input, select, textarea{ font-family: var(--font-body); }
 @media (prefers-reduced-motion: reduce){
   *{ transition: none !important; animation: none !important; }
 }
+
+/* ==========================================================
+   REFUERZO: el atributo [hidden] siempre debe ganar, sin
+   importar qué display defina la clase del elemento
+   (arregla login-screen, login-form/registerForm,
+   add-category-form y cualquier otro caso similar)
+   ========================================================== */
+[hidden]{ display: none !important; }
