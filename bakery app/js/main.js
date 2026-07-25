@@ -37,6 +37,13 @@ const cartTotalQty = document.getElementById("cartTotalQty");
 const cartTotalPrice = document.getElementById("cartTotalPrice");
 const cartItemsList = document.getElementById("cartItemsList");
 const clearCartBtn = document.getElementById("clearCartBtn");
+const exportImageBtn = document.getElementById("exportImageBtn");
+const exportPdfBtn = document.getElementById("exportPdfBtn");
+const receiptArea = document.getElementById("receiptArea");
+const receiptDate = document.getElementById("receiptDate");
+const receiptList = document.getElementById("receiptList");
+const receiptTotalQty = document.getElementById("receiptTotalQty");
+const receiptTotalPrice = document.getElementById("receiptTotalPrice");
 
 const openAddProductBtn = document.getElementById("openAddProduct");
 const productModal = document.getElementById("productModal");
@@ -401,6 +408,98 @@ clearCartBtn.addEventListener("click", () => {
   cart.clearCart();
   renderProducts();
   showToast("Selección vaciada");
+});
+
+/* ---------------------------------------------------------
+   Exportar la selección como recibo (imagen o PDF)
+--------------------------------------------------------- */
+function getSortedCartEntries() {
+  return cart.getEntries()
+    .map(([id, qty]) => ({ product: productsById.get(id), qty }))
+    .filter((e) => e.product)
+    .sort((a, b) => a.product.name.localeCompare(b.product.name));
+}
+
+function buildReceipt() {
+  const entries = getSortedCartEntries();
+  const { totalQty, totalPrice } = cart.getTotals(productsById);
+
+  const now = new Date();
+  receiptDate.textContent = now.toLocaleString("es-PE", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+
+  receiptList.innerHTML = "";
+  entries.forEach(({ product, qty }) => {
+    const li = document.createElement("li");
+    li.className = "receipt__item";
+
+    const info = document.createElement("div");
+    info.className = "receipt__item-info";
+    const name = document.createElement("span");
+    name.className = "receipt__item-name";
+    name.textContent = product.name;
+    const unit = document.createElement("span");
+    unit.className = "receipt__item-unit";
+    unit.textContent = `${money(product.price)} c/u`;
+    info.append(name, unit);
+
+    const right = document.createElement("div");
+    right.className = "receipt__item-info";
+    right.style.alignItems = "flex-end";
+    const qtyEl = document.createElement("span");
+    qtyEl.className = "receipt__item-qty";
+    qtyEl.textContent = `x${qty}`;
+    const subtotal = document.createElement("span");
+    subtotal.className = "receipt__item-subtotal";
+    subtotal.textContent = money(product.price * qty);
+    right.append(qtyEl, subtotal);
+
+    li.append(info, right);
+    receiptList.appendChild(li);
+  });
+
+  receiptTotalQty.textContent = String(totalQty);
+  receiptTotalPrice.textContent = money(totalPrice);
+}
+
+function hasSelection() {
+  return cart.getEntries().length > 0;
+}
+
+exportImageBtn.addEventListener("click", async () => {
+  if (!hasSelection()) { showToast("Tu selección está vacía"); return; }
+  if (typeof html2canvas === "undefined") { showToast("No se pudo cargar el generador de imágenes"); return; }
+
+  buildReceipt();
+  exportImageBtn.disabled = true;
+  const originalLabel = exportImageBtn.textContent;
+  exportImageBtn.textContent = "Generando…";
+
+  try {
+    const canvas = await html2canvas(receiptArea, { scale: 2, backgroundColor: "#FFFDF8" });
+    canvas.toBlob((blob) => {
+      if (!blob) { showToast("No se pudo generar la imagen"); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pedido-${new Date().toISOString().slice(0, 10)}.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, "image/jpeg", 0.95);
+  } catch (err) {
+    showToast("No se pudo generar la imagen");
+  } finally {
+    exportImageBtn.disabled = false;
+    exportImageBtn.textContent = originalLabel;
+  }
+});
+
+exportPdfBtn.addEventListener("click", () => {
+  if (!hasSelection()) { showToast("Tu selección está vacía"); return; }
+  buildReceipt();
+  window.print();
 });
 
 /* ---------------------------------------------------------
