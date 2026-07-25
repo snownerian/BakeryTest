@@ -47,6 +47,10 @@ export function clearCart() {
   persist();
 }
 
+export function getEntries() {
+  return Array.from(cart.entries());
+}
+
 export function getTotals(productsById) {
   let totalQty = 0;
   let totalPrice = 0;
