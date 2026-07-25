@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dulce Registro — Gestor de productos</title>
+<meta name="description" content="Gestor de productos con carrito para pastelería" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ============ PANTALLA DE LOGIN ============ -->
+<section id="loginView" class="login-screen">
+  <div class="login-box">
+    <div class="stamp stamp--login" aria-hidden="true">
+      <span>Dulce<br/>Registro</span>
+    </div>
+    <h1 class="login-title">Bienvenida de nuevo</h1>
+    <p class="login-sub">Ingresa para ver y armar tu pedido</p>
+
+    <form id="loginForm" class="login-form">
+      <label class="field">
+        <span>Usuario (correo)</span>
+        <input type="email" id="loginEmail" autocomplete="username" required placeholder="tu@correo.com" />
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" id="loginPassword" autocomplete="current-password" required placeholder="••••••••" />
+      </label>
+      <p id="loginError" class="form-error" role="alert" hidden></p>
+      <button type="submit" class="btn btn--primary btn--block" id="loginSubmit">Entrar</button>
+    </form>
+
+    <button id="toggleRegister" class="link-btn">¿Primera vez? Crear una cuenta</button>
+
+    <form id="registerForm" class="login-form" hidden>
+      <label class="field">
+        <span>Usuario (correo)</span>
+        <input type="email" id="registerEmail" autocomplete="username" required placeholder="tu@correo.com" />
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" id="registerPassword" autocomplete="new-password" required minlength="6" placeholder="mínimo 6 caracteres" />
+      </label>
+      <p id="registerError" class="form-error" role="alert" hidden></p>
+      <p id="registerSuccess" class="form-success" role="status" hidden></p>
+      <button type="submit" class="btn btn--secondary btn--block">Crear cuenta</button>
+    </form>
+  </div>
+</section>
+
+<!-- ============ APP PRINCIPAL ============ -->
+<div id="appView" class="app" hidden>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">🥐</span>
+      <span class="brand-name">Dulce Registro</span>
+    </div>
+
+    <div class="searchwrap">
+      <input
+        type="search"
+        id="searchInput"
+        class="search-input"
+        placeholder="Buscar producto…  (↑ ↓ ← → para moverte, Enter para sumar)"
+        autocomplete="off"
+      />
+      <kbd class="search-hint">Enter ↵</kbd>
+    </div>
+
+    <button id="logoutBtn" class="btn btn--ghost" title="Cerrar sesión">Salir</button>
+  </header>
+
+  <!-- Ticket de carrito -->
+  <aside id="cartTicket" class="cart-ticket" aria-live="polite">
+    <div class="cart-ticket__row">
+      <span class="cart-ticket__label">Seleccionado</span>
+      <span class="cart-ticket__value" id="cartTotalQty">0</span>
+    </div>
+    <div class="cart-ticket__row cart-ticket__row--sub">
+      <span class="cart-ticket__label">Total</span>
+      <span class="cart-ticket__value cart-ticket__value--price" id="cartTotalPrice">S/ 0.00</span>
+    </div>
+    <button id="clearCartBtn" class="link-btn link-btn--small">Vaciar selección</button>
+  </aside>
+
+  <!-- Barra de categorías -->
+  <nav class="categories" id="categoriesBar" aria-label="Categorías">
+    <!-- chips insertados por JS -->
+    <button id="addCategoryBtn" class="chip chip--add" title="Agregar categoría">+ Categoría</button>
+  </nav>
+  <form id="addCategoryForm" class="add-category-form" hidden>
+    <input type="text" id="newCategoryName" placeholder="Nombre de la nueva categoría" required />
+    <button type="submit" class="btn btn--primary btn--small">Agregar</button>
+    <button type="button" id="cancelAddCategory" class="btn btn--ghost btn--small">Cancelar</button>
+  </form>
+
+  <!-- Toolbar de administración -->
+  <div class="admin-toolbar">
+    <button id="openAddProduct" class="btn btn--primary">+ Nuevo producto</button>
+    <span id="resultsCount" class="results-count"></span>
+  </div>
+
+  <!-- Grilla de productos -->
+  <main id="productGrid" class="product-grid" tabindex="-1">
+    <!-- tarjetas insertadas por JS -->
+  </main>
+
+  <p id="emptyState" class="empty-state" hidden>No hay productos que coincidan con tu búsqueda 🍰</p>
+</div>
+
+<!-- ============ MODAL: CREAR / EDITAR PRODUCTO ============ -->
+<div id="productModal" class="modal" hidden>
+  <div class="modal__backdrop" id="modalBackdrop"></div>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal__close" id="modalClose" aria-label="Cerrar">✕</button>
+    <h2 id="modalTitle">Nuevo producto</h2>
+
+    <form id="productForm" class="product-form">
+      <input type="hidden" id="productId" />
+
+      <label class="field">
+        <span>Foto del producto</span>
+        <input type="file" id="productImage" accept="image/*" />
+        <img id="imagePreview" class="image-preview" alt="Vista previa" hidden />
+      </label>
+
+      <label class="field">
+        <span>Nombre</span>
+        <input type="text" id="productName" required placeholder="Ej. Torta de chocolate" />
+      </label>
+
+      <label class="field">
+        <span>Descripción</span>
+        <textarea id="productDescription" rows="2" placeholder="Ej. Bizcocho húmedo con ganache"></textarea>
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Precio (S/)</span>
+          <input type="number" id="productPrice" step="0.01" min="0" required placeholder="0.00" />
+        </label>
+        <label class="field">
+          <span>Cantidad disponible</span>
+          <input type="number" id="productQuantity" step="1" min="0" required placeholder="0" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Categoría</span>
+        <select id="productCategory" required></select>
+      </label>
+
+      <p id="productFormError" class="form-error" role="alert" hidden></p>
+
+      <div class="modal__actions">
+        <button type="button" id="deleteProductBtn" class="btn btn--danger" hidden>Eliminar</button>
+        <button type="submit" class="btn btn--primary" id="saveProductBtn">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
